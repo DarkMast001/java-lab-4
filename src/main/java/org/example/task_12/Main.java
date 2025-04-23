@@ -5,18 +5,16 @@ import java.lang.reflect.Method;
 
 public class Main {
     public static void main(String[] args) {
-        // Количество итераций для тестирования
         int iterations = 1_000_000;
 
         try {
             long startTimeNormal = System.currentTimeMillis();
             PrintStream out = System.out;
             for (int i = 0; i < iterations; i++) {
-                out.println("Hello, World");
+                System.out.println("Hello, World");
             }
             long endTimeNormal = System.currentTimeMillis();
 
-            // 2. Вызов метода через рефлексию
             long startTimeReflection = System.currentTimeMillis();
             Class<?> printStreamClass = Class.forName("java.io.PrintStream");
             Method printlnMethod = printStreamClass.getDeclaredMethod("println", String.class);
@@ -26,7 +24,6 @@ public class Main {
             }
             long endTimeReflection = System.currentTimeMillis();
 
-            // 3. Вывод результатов
             long timeNormal = endTimeNormal - startTimeNormal;
             long timeReflection = endTimeReflection - startTimeReflection;
 

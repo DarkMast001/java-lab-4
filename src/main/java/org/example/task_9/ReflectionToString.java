@@ -1,6 +1,9 @@
 package org.example.task_9;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,26 +24,41 @@ public class ReflectionToString {
 
         visited.add(obj);
 
-        StringBuilder result = new StringBuilder();
         Class<?> clazz = obj.getClass();
+
+        try {
+            Method toStringMethod = clazz.getMethod("toString");
+            if (!toStringMethod.getDeclaringClass().equals(Object.class)) {
+                return (String) toStringMethod.invoke(obj);
+            }
+        }
+        catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            System.out.println(e.getClass() + ": " + e.getMessage());
+        }
+
+        StringBuilder result = new StringBuilder();
 
         result.append(clazz.getName()).append(" {");
 
         Field[] fields = clazz.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
+
+            result.append(field.getName());
+
             field.setAccessible(true);
 
             String fieldName = field.getName();
             Object fieldValue;
             try {
+
                 fieldValue = field.get(obj);
 
                 if (fieldValue != null && !isPrimitiveOrWrapper(fieldValue.getClass())) {
                     fieldValue = toStringHelper(fieldValue, visited);
                 }
 
-                result.append(fieldName).append("=").append(fieldValue);
+                result.append("=").append(fieldValue);
 
                 if (i < fields.length - 1) {
                     result.append(", ");
@@ -54,7 +72,6 @@ public class ReflectionToString {
         return result.toString();
     }
 
-    // Проверка, является ли класс примитивным или оберткой над примитивным типом
     private static boolean isPrimitiveOrWrapper(Class<?> clazz) {
         return clazz.isPrimitive() ||
                 clazz == Integer.class ||
@@ -64,7 +81,8 @@ public class ReflectionToString {
                 clazz == Boolean.class ||
                 clazz == Character.class ||
                 clazz == Byte.class ||
-                clazz == Short.class;
+                clazz == Short.class ||
+                clazz == String.class;
     }
 
 }
