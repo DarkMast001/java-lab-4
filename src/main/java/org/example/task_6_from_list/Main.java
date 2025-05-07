@@ -1,64 +1,50 @@
 package org.example.task_6_from_list;
 
-import ru.mephi.Person;
-
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
+import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ServiceLoader;
 
 public class Main {
     public static void main(String[] args) {
-        final ServiceLoader<SimpleService> services = ServiceLoader.load(SimpleService.class);
-        for (SimpleService service : services) {
-            System.out.println("Echo: " + service.echo("Привет"));
-        }
+//        final ServiceLoader<SimpleService> services = ServiceLoader.load(SimpleService.class);
+//        for (SimpleService service : services) {
+//            System.out.println("Echo: " + service.echo("Привет"));
+//        }
+
+        // Запускать из консоли java Main.java
 
         System.out.println("Рабочая директория: " + System.getProperty("user.dir"));
 
-//        ClassLoader classLoader1 = Main.class.getClassLoader();
-//        ClassLoader classLoader2 = Main.class.getClassLoader();
-        ClassLoader classLoader1 = ClassLoader.getSystemClassLoader();
-        ClassLoader classLoader2 = ClassLoader.getSystemClassLoader();
-
         try {
-            URL[] urls = {
-                    new URL("file:///D:/Институт/3%20курс%202%20семестр/Java/lab4/src/main/java/"),
-                    new URL("file:///D:/Институт/3%20курс%202%20семестр/Java/lab4/src/otherPath/")
-            };
+            URL person1Url = new File("out/person1").toURI().toURL();
+            System.out.println(new File("out/person1").getAbsolutePath());
+            URL person2Url = new File("out/person2").toURI().toURL();
+            System.out.println(new File("out/person2").getAbsolutePath());
 
-            String className = "ru.mephi.Person";
+            URLClassLoader loader1 = new URLClassLoader(new URL[]{person1Url});
+            URLClassLoader loader2 = new URLClassLoader(new URL[]{person2Url});
 
-            URLClassLoader loader1 = new URLClassLoader(urls);
-            Class<?> clazz1 = Class.forName(className, true, loader1);
-            Object person1 = clazz1.getConstructor(String.class).newInstance("Dima");
-            System.out.println("Класс 1 загружен: " + clazz1.getName());
+            Class<?> personClass1 = loader1.loadClass("ru.mephi.Person");
+            Class<?> personClass2 = loader2.loadClass("ru.mephi.Person");
 
-            URLClassLoader loader2 = new URLClassLoader(urls);
-            Class<?> clazz2 = Class.forName(className, true, loader2);
-            Object person2 = clazz1.getConstructor(String.class).newInstance("Dima");
-            System.out.println("Класс 1 загружен: " + clazz1.getName());
+            Object person1 = personClass1.getDeclaredConstructor(String.class).newInstance("Dima");
 
-//            URLClassLoader customClassLoader = new URLClassLoader(new URL[]{new URL("file:///D:/Институт/3%20курс%202%20семестр/Java/lab4/src/main/java/")});
-//            Class<?> clazz1 = customClassLoader.loadClass("ru.mephi.Person");
-//            Object person1 = clazz1.getConstructor(String.class).newInstance("Dima");
-//            System.out.println("Класс 1 загружен: " + clazz1.getName());
-//
-//            ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
-//            Class<?> clazz2 = systemClassLoader.loadClass("ru.mephi.Person");
-//            Object person2 = clazz2.getConstructor(String.class).newInstance("Egor");
-//            System.out.println("Класс 2 загружен: " + clazz2.getName());
+            System.out.println("person1 classloader: " + personClass1.getClassLoader());
+            System.out.println("person2 classloader: " + personClass2.getClassLoader());
 
             try {
-                clazz1.cast(person2);
-                System.out.println("Успешное приведение!");
+                personClass2.cast(person1);
+                System.out.println("Успешное приведение");
             } catch (ClassCastException ex) {
-                System.out.println("Ошибка: " + ex.getMessage());
+                System.out.println(ex.getMessage());
             }
+
+            loader1.close();
+            loader2.close();
         }
         catch (Exception e) {
-            System.out.println("Произошла ошибка: " + e.getMessage());
+            System.out.println("Ошибка: " + e);
+            e.printStackTrace();
         }
     }
 }
